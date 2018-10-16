@@ -14,6 +14,7 @@
 #include "qai.h"
 
 const char *kbase_file_path = "./.qai/kbase";
+static struct KBase *kbase;
 
 int compile_kbase(void);
 
@@ -30,6 +31,26 @@ int main(int argc, char* argv[])
 		die("Error: compile_kbase");
 	}
 
+	// Checking question file
+	// 2. Read all kbase, compile it, store it
+	struct Knowledge *fk;
+	char *qfile_name = argv[1];
+	FILE *qfile = fopen(qfile_name, "r");
+	String line;
+	regmatch_t pregmatch[1];
+	while(GetString(&line, qfile) > 0)
+	{
+		for(int i = 0; i < kbase->count; ++i)
+		{
+			fk = kbase_get_knowledge(kbase, kbase->keys[i]);
+			if (regexec(&fk->compiled, line, 1, pregmatch, 0) == 0)
+			{
+				printf("MATCHED[%s / %s]: %s\n", fk->pattern_name, fk->pattern, line);
+				break;
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -44,7 +65,7 @@ int compile_kbase()
 	}
 
 	// Initializing Knowledge Base
-	struct KBase *kb = kbase_init();
+	kbase = kbase_init();
 	struct Knowledge *fk;
 	char pattern_name[VARNAME_LEN], pattern[PATTER_LEN];
 
@@ -56,7 +77,7 @@ int compile_kbase()
 		extract_pattern_name(line, pattern_name);
 		extract_pattern(line, pattern);
 		printf("Pattern name: %s      Pattern: %s\n", pattern_name, pattern);
-		if (kbase_add_knowledge(kb, pattern_name, pattern) != 0)
+		if (kbase_add_knowledge(kbase, pattern_name, pattern) != 0)
 		{
 			die("ERROR: kbase_add_knowledge");
 		}
@@ -65,15 +86,15 @@ int compile_kbase()
 	}
 
 	printf("Added Knowleges -->\n");
-	for (int i = 0; i < kb->count; ++i)
+	for (int i = 0; i < kbase->count; ++i)
 	{
-		fk = kbase_get_knowledge(kb, kb->keys[i]);
+		fk = kbase_get_knowledge(kbase, kbase->keys[i]);
 		printf("Pattern name: %s      Pattern: %s\n", fk->pattern_name, fk->pattern);
 	}
 
 
 	// Destroying Knowledge base
-	kbase_destroy(kb);
+	kbase_destroy(kbase);
 
 	fclose(kbase_h);
 

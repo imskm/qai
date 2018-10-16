@@ -45,6 +45,7 @@ int compile_kbase()
 
 	// Initializing Knowledge Base
 	struct KBase *kb = kbase_init();
+	struct Knowledge *fk;
 	char pattern_name[VARNAME_LEN], pattern[PATTER_LEN];
 
 	// 2. Read all kbase, compile it, store it
@@ -64,7 +65,11 @@ int compile_kbase()
 	}
 
 	printf("Added Knowleges -->\n");
-	//while (get_next_knowledge(
+	for (int i = 0; i < kb->count; ++i)
+	{
+		fk = kbase_get_knowledge(kb, kb->keys[i]);
+		printf("Pattern name: %s      Pattern: %s\n", fk->pattern_name, fk->pattern);
+	}
 
 
 	// Destroying Knowledge base

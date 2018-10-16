@@ -4,6 +4,7 @@
 #define PATTER_LEN   20
 #define VARNAME_LEN  20
 #define HT_SIZE      HASH_TABLE_SIZE  /* Hash Table size, comes from hash.h */
+#define KEYS_SIZE    20
 
 struct Knowledge {
 	char *pattern;
@@ -20,6 +21,7 @@ struct KBase {
 	unsigned int count;
 	KHash *knowledges;
 	unsigned int knowledge_size;
+	char **keys;
 };
 
 struct KBase *kbase_init();
@@ -66,6 +68,7 @@ struct KBase *kbase_init()
 	kb->count = 0;
 	kb->knowledge_size = sizeof(struct Knowledge);
 	kb->knowledges = hash_create(kb->knowledge_size);
+	kb->keys = (char **) malloc(sizeof(char *) * KEYS_SIZE);
 
 	return kb;
 }
@@ -75,6 +78,11 @@ int kbase_add_knowledge(struct KBase *kb, char *pattern_name, char *pattern)
 	struct Knowledge *know = new_knowledge(pattern_name, pattern);
 	if (know == NULL)
 		return 1;
+
+	kb->keys[ kb->count ] = strdup(pattern);
+	kb->count++;
+	// Check if keys reached its size, if yes then grow the array
+	// TODO
 
 	if (!hash_put(kb->knowledges, pattern, know))
 		return 2;

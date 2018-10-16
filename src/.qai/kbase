@@ -1,0 +1,5 @@
+<question> ^[1-9]+[.,)] 
+<question> ^[1-9]+\)  
+<answer> ^Ans
+<answer> ^Ans:-
+<answer> ^[a-z]\) 

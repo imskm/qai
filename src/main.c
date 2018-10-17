@@ -10,6 +10,7 @@
 #include "headers/libutil.h"
 #include "headers/easyio.h"
 #include "headers/hash.h"
+#include "headers/colors.h"
 
 #include "qai.h"
 
@@ -37,17 +38,18 @@ int main(int argc, char* argv[])
 	char *qfile_name = argv[1];
 	FILE *qfile = fopen(qfile_name, "r");
 	String line;
-	regmatch_t pregmatch[1];
 	while(GetString(&line, qfile) > 0)
 	{
-		for(int i = 0; i < kbase->count; ++i)
+		fk = kbase_guess(kbase, line);
+		// kbase_guess() guessed the line using its knowldege base
+		if (fk != NULL)
 		{
-			fk = kbase_get_knowledge(kbase, kbase->keys[i]);
-			if (regexec(&fk->compiled, line, 1, pregmatch, 0) == 0)
-			{
-				printf("MATCHED[%s / %s]: %s\n", fk->pattern_name, fk->pattern, line);
-				break;
-			}
+			printf(ANSI_COLOR_GREEN"MATCHED[%s / %s]: "ANSI_RESET"%s\n", fk->pattern_name, fk->pattern, line);
+		}
+		// Unkown line: kbase_guess() is not able to guess the line
+		else
+		{
+			printf(ANSI_COLOR_RED"UNKNOWN: "ANSI_RESET"%s\n", line);
 		}
 	}
 
@@ -76,7 +78,7 @@ int compile_kbase()
 		printf("%s\n", line);
 		extract_pattern_name(line, pattern_name);
 		extract_pattern(line, pattern);
-		printf("Pattern name: %s      Pattern: %s\n", pattern_name, pattern);
+		//printf("Pattern name: %s      Pattern: %s\n", pattern_name, pattern);
 		if (kbase_add_knowledge(kbase, pattern_name, pattern) != 0)
 		{
 			die("ERROR: kbase_add_knowledge");
@@ -85,11 +87,11 @@ int compile_kbase()
 		free(line);
 	}
 
-	printf("Added Knowleges -->\n");
+	//printf("Added Knowleges -->\n");
 	for (int i = 0; i < kbase->count; ++i)
 	{
 		fk = kbase_get_knowledge(kbase, kbase->keys[i]);
-		printf("Pattern name: %s      Pattern: %s\n", fk->pattern_name, fk->pattern);
+		//printf("Pattern name: %s      Pattern: %s\n", fk->pattern_name, fk->pattern);
 	}
 
 

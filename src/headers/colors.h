@@ -1,6 +1,5 @@
 #ifndef _COLORS_H
-	#define _COLORS_H
-#endif
+#define _COLORS_H
 
 
 /**
@@ -53,7 +52,4 @@
 #define ANSI_BOLD			"\x1b[1m"
 
 
-extern void
-stdout_color(int fg, ...)
-{
-}
+#endif

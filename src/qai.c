@@ -1,111 +1,46 @@
-struct Knowledge *new_knode(char *pattern_name, char *pattern)
+#include <stdio.h>
+#include <string.h>
+
+#include "qai.h"
+#include "common.h"
+#include "headers/colors.h"
+
+static unsigned int nque, nans, nunk;
+
+void qai_start()
 {
-	regex_t regex;
-	struct Knowledge *knode = (struct KNode *) malloc(sizeof(struct KNode));
-	if (knode)
+	nque = 0, nans = 0, nunk = 0;
+	fprintf(stderr, ANSI_BOLD ANSI_COLOR_YELLOW"QAI Started\n"ANSI_RESET);
+}
+
+void qai_stop()
+{
+	fprintf(stderr, ANSI_BOLD ANSI_COLOR_YELLOW"QAI Stopping\n"ANSI_RESET);
+	fprintf(stderr, "    Questions: %3d\n", nque);
+	fprintf(stderr, "    Answers  : %3d\n", nans);
+	fprintf(stderr, "    Unknowns : %3d\n", nunk);
+	fprintf(stderr, "QAI Stoped\n");
+}
+
+void qai_action(char *line, int type, char *var_name)
+{
+	switch(type)
 	{
-		knode->pattern_name = strdup(patter_name);
-		knode->pattern = strdup(pattern);
-		if (regcomp(&regex, pattern, REG_EXTENDED | REG_NOSUB) != 0)
-		{
-			free(knode);
-			return NULL;
-		}
+		case KBASE_KNW :
+			fprintf(stderr, ANSI_COLOR_GREEN"%s: "ANSI_RESET"%s\n", var_name, line);
+			if (strcmp(var_name, "question") == 0)
+				nque++;
+			else if (strcmp(var_name, "answer") == 0)
+				nans++;
+			break;
+			
+		case KBASE_UNK :
+			fprintf(stderr, ANSI_COLOR_RED"%s: "ANSI_RESET"%s\n", "UNKNOWN", line);
+			nunk++;
+			break;
 
-		knode->compiled = regex;
+		default :
+			//
+			break;
 	}
-
-	return knode;
-}
-
-struct KBase *kbase_init()
-{
-	struct KBase *kb = (struct KBase *) malloc(sizeof(struct KBase));
-	if (!kb)
-		return NULL;
-
-	kb->count = 0;
-	kb->knowledges = hash_create(sizeof(struct Knowledge));
-	kb->knode_size = knode_size;
-
-	return kb;
-}
-
-int kbase_add(struct KBase *kb, char *pattern_name, char *pattern)
-{
-	Knowledge *knode = new_Knode(pattern_name, pattern);
-	if (knode == NULL)
-		return 1;
-
-	if (!hash_put(pattern, knode))
-		return 2;
-
-	// no need now, since this was copied to hash table
-	free(knode);
-
-	return 0;
-}
-
-void kbase_destroy(struct KBase *kb)
-{
-	// TODO
-}
-
-/**
- * Some utility functions
- */
-int extract_pattern_name(char *line, char *storage)
-{
-	const int started = 1, nstarted = 0;
-	const char begin_tag = '<';
-	const char end_tag   = '>';
-
-	int state = nstarted;
-	int c, i, k;
-
-	i = k = 0;
-	// skipping any leading spaces
-	while ((c = line[i++]) == ' ' || c == '\t')
-		; /* skipping spaces */
-
-	--i; /* syncing cursor position from previous +1 offset */
-	while ((c = line[i++]) != end_tag && c != '\0')
-	{
-		if (c == begin_tag)
-		{
-			state = started;
-			continue;
-		}
-
-		if (state == started)
-			storage[k++] = c;
-	}
-
-	storage[k] = 0;
-
-	return k;
-}
-
-int extract_pattern(char *line, char *storage)
-{
-	int c, i, k;
-	const int started = 1;
-	int state;
-
-	i = k = state = 0;
-	while ((c = line[i++]) != '\0')
-	{
-		if (state != started && c == ' ')
-		{
-			state = started;
-			continue;
-		}
-
-		if (state == started)
-			storage[k++] = c;
-	}
-
-	storage[k] = 0;
-
-	return k;
 }

@@ -14,6 +14,48 @@ static unsigned int nque, nans, nunk;
 static FILE *qa_file;
 static char current_file[64] = STORAGE;
 static int is_running = 0;
+
+
+int ltrim(char *line)
+{
+	int i, k, is_trimmed;
+
+	is_trimmed = 0;
+	for (i = k = 0; line[i]; ++i)
+	{   
+		if (!is_trimmed && (line[i] == ' ' || line[i] == '\t'))
+			continue;
+		else
+			is_trimmed = 1;
+
+		line[k++] = line[i];
+	}   
+	line[k] = '\0';
+
+	return k;
+}
+
+
+int rtrim(char *line)
+{
+	int i, len;
+
+	len = strlen(line);
+	for (i = len - 1; i > 0; --i)
+		if (line[i] != ' ' && line[i] != '\t')
+			break;
+
+	line[++i] = '\0';
+
+	return len - i;
+}
+
+int trim(char *line)
+{
+	return ltrim(line) + rtrim(line);
+}
+
+
 static int file_exist(char *filename)
 {
 	if (access(filename, R_OK) == 0)
@@ -51,10 +93,12 @@ static FILE *file_init(char *filename)
 
 void qai_action(char *line, int type, char *var_name, regmatch_t *match)
 {
+	char *writable_line;
 	switch(type)
 	{
 		case KBASE_KNW :
-			fprintf(stderr, ANSI_COLOR_GREEN"%12s: "ANSI_RESET"%s\n", var_name, (char *)&line[match->rm_eo]);
+			writable_line = (char *)&line[match->rm_eo];
+			fprintf(stderr, ANSI_COLOR_GREEN"%12s: "ANSI_RESET"%s\n", var_name, writable_line);
 			//fprintf(stderr, "Start: %d   End: %d", match.rm_so, match.rm_eo);
 			if (strcmp(var_name, "question") == 0)
 				nque++;
@@ -62,7 +106,8 @@ void qai_action(char *line, int type, char *var_name, regmatch_t *match)
 				nans++;
 
 			// writing line to storage
-			write_line(qa_file, (char *)&line[match->rm_eo]);
+			trim(writable_line);
+			write_line(qa_file, writable_line);
 			break;
 			
 		case KBASE_UNK :

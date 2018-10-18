@@ -16,6 +16,7 @@ struct Knowledge {
 	char *pattern;
 	char *pattern_name;
 	regex_t compiled;
+	regmatch_t match;
 };
 
 typedef HashMap KHash;
@@ -53,7 +54,7 @@ struct Knowledge *new_knowledge(char *pattern_name, char *pattern)
 	{
 		know->pattern_name = strdup(pattern_name);
 		know->pattern = strdup(pattern);
-		if (regcomp(&regex, pattern, REG_EXTENDED | REG_NOSUB) != 0)
+		if (regcomp(&regex, pattern, REG_EXTENDED) != 0)
 		{
 			free(know);
 			return NULL;
@@ -108,14 +109,16 @@ struct Knowledge *kbase_get_knowledge(struct KBase *kb, char *pattern)
 struct Knowledge *kbase_guess(struct KBase *kbase, char *line)
 {
 	struct Knowledge *fk;
-	regmatch_t pregmatch[1];
+	regmatch_t pregmatch[2];
 
 	for(int i = 0; i < kbase->count; ++i)
 	{
 		fk = kbase_get_knowledge(kbase, kbase->keys[i]);
-		if (regexec(&fk->compiled, line, 1, pregmatch, 0) == 0)
+		if (regexec(&fk->compiled, line, sizeof(pregmatch) / sizeof(pregmatch[0]), pregmatch, 0) == 0)
 		{
-			//printf("MATCHED[%s / %s]: %s\n", fk->pattern_name, fk->pattern, line);
+			// Storing matched offset, using regmatch_t struct
+			fk->match = pregmatch[1];
+			//fprintf(stderr, "kbase_guess: %d  %d", fk->match.rm_so, fk->match.rm_eo);
 			return fk;
 		}
 	}

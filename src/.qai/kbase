@@ -1,6 +1,6 @@
-<question> ^[0-9]+[.,)] 
-<question> ^[0-9]+\)  
-<question> ^[0-9]+\)
-<answer> ^Ans
-<answer> ^Ans:-
-<answer> ^[a-z]\) 
+<question> ^([0-9]+[.,)]) 
+<question> ^([0-9]+\))  
+<question> ^([0-9]+\))
+<answer> ^(Ans)
+<answer> ^(Ans:-)
+<answer> ^([a-z]\)) 

@@ -11,6 +11,6 @@
 
 void qai_start();
 void qai_stop();
-void qai_action(char *line, int type, char *var_name);
+void qai_action(char *line, int type, char *var_name, regmatch_t *match);
 
 #endif

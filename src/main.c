@@ -46,11 +46,11 @@ int main(int argc, char* argv[])
 		fk = kbase_guess(kbase, line);
 		// kbase_guess() guessed the line using its knowldege base
 		if (fk != NULL)
-			qai_action(line, KBASE_KNW, fk->pattern_name);
+			qai_action(line, KBASE_KNW, fk->pattern_name, &fk->match);
 
 		// Unkown line: kbase_guess() is not able to guess the line
 		else
-			qai_action(line, KBASE_UNK, NULL);
+			qai_action(line, KBASE_UNK, NULL, NULL);
 	}
 	qai_stop();
 

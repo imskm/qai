@@ -9,6 +9,9 @@
 #include "headers/colors.h"
 
 #define STORAGE "storage.qa"
+#define LINE_UNK 0
+#define LINE_QUE 1
+#define LINE_ANS 2
 
 static unsigned int nque, nans, nunk;
 static FILE *qa_file;
@@ -93,6 +96,8 @@ static FILE *file_init(char *filename)
 
 void qai_action(char *line, int type, char *var_name, regmatch_t *match)
 {
+	// 0 = UNKWN 1 = Question 2 = Answer
+	static int prev_line = LINE_UNK;
 	char *writable_line;
 	switch(type)
 	{
@@ -101,9 +106,15 @@ void qai_action(char *line, int type, char *var_name, regmatch_t *match)
 			fprintf(stderr, ANSI_COLOR_GREEN"%12s: "ANSI_RESET"%s\n", var_name, writable_line);
 			//fprintf(stderr, "Start: %d   End: %d", match.rm_so, match.rm_eo);
 			if (strcmp(var_name, "question") == 0)
+			{
 				nque++;
+				prev_line = LINE_QUE;
+			}
 			else if (strcmp(var_name, "answer") == 0)
+			{
 				nans++;
+				prev_line = LINE_ANS;
+			}
 
 			// writing line to storage
 			trim(writable_line);
@@ -111,8 +122,21 @@ void qai_action(char *line, int type, char *var_name, regmatch_t *match)
 			break;
 			
 		case KBASE_UNK :
-			fprintf(stderr, ANSI_COLOR_RED"%s: "ANSI_RESET"%s\n", "UNKNOWN", line);
-			nunk++;
+			if (prev_line == LINE_QUE)
+			{
+				fprintf(stderr, ANSI_COLOR_RED"%s: "ANSI_RESET"%s\n", "PROBQUES", line);
+				prev_line = LINE_QUE;
+			}
+			else if (prev_line == LINE_ANS)
+			{
+				fprintf(stderr, ANSI_COLOR_RED"%s: "ANSI_RESET"%s\n", "PROBANS", line);
+				prev_line = LINE_ANS;
+			}
+			else
+			{
+				fprintf(stderr, ANSI_COLOR_RED"%s: "ANSI_RESET"%s\n", "UNKNOWN", line);
+				nunk++;
+			}
 			break;
 
 		default :

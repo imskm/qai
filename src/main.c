@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
 		// Unkown line: kbase_guess() is not able to guess the line
 		else
 			qai_action(line, KBASE_UNK, NULL, NULL);
+
+		free(line);
 	}
 	qai_stop();
 
